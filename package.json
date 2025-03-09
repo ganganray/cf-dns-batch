@@ -1,0 +1,20 @@
+{
+  "name": "cf-dns-batch",
+  "version": "0.1.0",
+  "description": "Cloudflare DNS Batch Management Tool",
+  "scripts": {
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "dev": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\"",
+    "build": "cd client && npm run build && cd ../server && npm run build",
+    "start": "cd server && npm start",
+    "clean": "rimraf client/dist server/dist",
+    "test-build": "npm run clean && npm run build && npm run test-preview",
+    "test-preview": "concurrently \"cd server && cross-env NODE_ENV=production npm start\" \"cd client && npm run preview\"",
+    "prod": "cross-env NODE_ENV=production npm run start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "rimraf": "^5.0.5"
+  }
+}
