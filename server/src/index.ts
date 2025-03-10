@@ -8,16 +8,16 @@ import { SettingsData, DnsUpdateRequest, DnsUpdateResponse } from './types';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Make paths cross-platform compatible
-const DATA_DIR = process.env.NODE_ENV === 'production' 
-  ? (process.platform === 'win32' ? 'C:/ProgramData/cf-dns-batch' : '/etc/cf-dns-batch')
+// Simplify path handling - use Linux-style paths for production
+const DATA_DIR = process.env.NODE_ENV === 'production'
+  ? '/etc/cf-dns-batch'
   : path.join(__dirname, '../data');
 
 const SETTINGS_FILE_PATH = path.join(DATA_DIR, 'settings.json');
 
-// Update static file serving to be environment-aware
+// Update static file serving to be environment-aware with better Docker compatibility
 const CLIENT_DIST = process.env.NODE_ENV === 'production'
-  ? path.join(__dirname, '../../client/dist')  // From server/dist to client/dist
+  ? process.env.CLIENT_PATH || path.join(__dirname, '../../client/dist') // Allow override via env var
   : path.join(__dirname, '../../client/dist'); // Same path for development
 
 // Ensure data directory exists with proper error handling
