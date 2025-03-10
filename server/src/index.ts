@@ -6,7 +6,8 @@ import fetch from 'node-fetch';
 import { SettingsData, DnsUpdateRequest, DnsUpdateResponse } from './types';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
+const HOST = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
 
 // Simplify path handling - use Linux-style paths for production
 const DATA_DIR = process.env.NODE_ENV === 'production'
@@ -347,9 +348,6 @@ app.get('*', (req, res) => {
 });
 
 // Start server with enhanced logging
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode`);
-  console.log(`Server port: ${PORT}`);
-  console.log(`Data directory: ${DATA_DIR}`);
-  console.log(`Client files: ${CLIENT_DIST}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Server running on ${HOST}:${PORT}`);
 });

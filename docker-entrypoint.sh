@@ -39,18 +39,18 @@ if [ "$USE_HTTPS" = "true" ]; then
   # HTTPS configuration
   cat > /etc/caddy/Caddyfile << EOL
 {
-  # Global options
   admin off
 }
 
 $DOMAIN {
-  root * /app/client
-  file_server
-
+  # Handle API requests first
   handle /api/* {
     reverse_proxy localhost:$PORT
   }
-
+  
+  # Then serve static files
+  root * /app/client
+  file_server
   try_files {path} /index.html
 }
 EOL
@@ -58,7 +58,6 @@ else
   # HTTP only configuration
   cat > /etc/caddy/Caddyfile << EOL
 {
-  # Global options
   admin off
   auto_https off
   http_port 80
@@ -66,13 +65,14 @@ else
 }
 
 :80 {
-  root * /app/client
-  file_server
-
+  # Handle API requests first
   handle /api/* {
     reverse_proxy localhost:$PORT
   }
-
+  
+  # Then serve static files
+  root * /app/client
+  file_server
   try_files {path} /index.html
 }
 EOL
