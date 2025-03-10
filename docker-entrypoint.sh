@@ -32,55 +32,9 @@ if [ ! -f "/etc/cf-dns-batch/settings.json" ]; then
 EOL
 fi
 
-# Generate Caddyfile based on environment variables
-echo "Generating Caddyfile..."
-
-if [ "$USE_HTTPS" = "true" ]; then
-  # HTTPS configuration
-  cat > /etc/caddy/Caddyfile << EOL
-{
-  admin off
-}
-
-$DOMAIN {
-  # Handle API requests first
-  handle /api/* {
-    reverse_proxy localhost:$PORT
-  }
-  
-  # Then serve static files
-  root * /app/client
-  file_server
-  try_files {path} /index.html
-}
-EOL
-else
-  # HTTP only configuration
-  cat > /etc/caddy/Caddyfile << EOL
-{
-  admin off
-  auto_https off
-  http_port 80
-  https_port 443
-}
-
-:80 {
-  # Handle API requests first
-  handle /api/* {
-    reverse_proxy localhost:$PORT
-  }
-  
-  # Then serve static files
-  root * /app/client
-  file_server
-  try_files {path} /index.html
-}
-EOL
-fi
-
 echo "Starting Node.js server..."
 cd /app/server
-node index.js &
+exec node dist/index.js
 
 echo "Starting Caddy server..."
 caddy run --config /etc/caddy/Caddyfile --adapter caddyfile

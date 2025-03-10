@@ -8,7 +8,7 @@ COPY package*.json ./
 COPY client/package*.json ./client/
 COPY server/package*.json ./server/
 
-# Install dependencies - modified to work better in Docker context
+# Install dependencies
 RUN npm install && \
     cd client && npm install && \
     cd ../server && npm install
@@ -20,17 +20,14 @@ COPY . .
 RUN npm run build
 
 # Final stage
-FROM caddy:2-alpine
-
-# Install Node.js
-RUN apk add --no-cache nodejs npm
+FROM node:18-alpine
 
 # Create app directory
 WORKDIR /app
 
 # Copy built files from builder stage
-COPY --from=builder /app/client/dist /app/client
-COPY --from=builder /app/server/dist /app/server
+COPY --from=builder /app/client/dist /app/client/dist
+COPY --from=builder /app/server/dist /app/server/dist
 COPY --from=builder /app/server/package.json /app/server/
 
 # Install production dependencies for server
@@ -45,15 +42,13 @@ WORKDIR /app
 COPY docker-entrypoint.sh /app/
 RUN chmod +x /app/docker-entrypoint.sh
 
-# Expose ports
-EXPOSE 80 443
+# Expose port
+EXPOSE 80
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=3001
-ENV CLIENT_PATH=/app/client
-ENV USE_HTTPS=false
-ENV DOMAIN=0.0.0.0
+ENV PORT=80
+ENV CLIENT_PATH=/app/client/dist
 
 # Start the application
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
