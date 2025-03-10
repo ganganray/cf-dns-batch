@@ -377,6 +377,7 @@ export function App() {
                 onBatchSelect={handleBatchSelect}
                 onUpdate={handleUpdateRecords}
                 updating={updatingRecords}
+                settings={settings} // Add the settings prop here
               />
             </Stack>
           </Paper>

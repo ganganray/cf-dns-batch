@@ -53,6 +53,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const [displayedToken, setDisplayedToken] = useState('');
   const [isTokenEdited, setIsTokenEdited] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  // Add validation state
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // Update settings when initialSettings prop changes or when drawer opens
   useEffect(() => {
@@ -60,10 +62,17 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       setSettings(initialSettings);
       setIsTokenEdited(false);
       setDisplayedToken('');
+      setValidationErrors({});
     }
   }, [initialSettings, open]);
 
-  // Handle IP options changes
+  // Add IPv4 validation function
+  const isValidIPv4 = (ip: string): boolean => {
+    const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    return ipv4Regex.test(ip);
+  };
+
+  // Handle IP options changes with validation
   const handleAddIpOption = () => {
     setSettings(prev => ({
       ...prev,
@@ -79,6 +88,13 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       ...prev,
       ipOptions: prev.ipOptions.filter(option => option.id !== id)
     }));
+    
+    // Remove any validation errors for this option
+    setValidationErrors(prev => {
+      const newErrors = {...prev};
+      delete newErrors[`ip-${id}`];
+      return newErrors;
+    });
   };
 
   const handleIpOptionChange = (id: string, field: 'address' | 'description', value: string) => {
@@ -88,6 +104,22 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         option.id === id ? { ...option, [field]: value } : option
       )
     }));
+    
+    // Validate IP address
+    if (field === 'address') {
+      if (value && !isValidIPv4(value)) {
+        setValidationErrors(prev => ({
+          ...prev,
+          [`ip-${id}`]: 'Please enter a valid IPv4 address'
+        }));
+      } else {
+        setValidationErrors(prev => {
+          const newErrors = {...prev};
+          delete newErrors[`ip-${id}`];
+          return newErrors;
+        });
+      }
+    }
   };
   // Handle API token changes
   const handleApiTokenChange = (value: string) => {
@@ -137,6 +169,21 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     }));
   };
 
+  // Add domain validation function with wide compatibility
+  const isValidDomain = (domain: string): boolean => {
+    if (!domain) return false;
+    
+    // Allow domain names with letters, numbers, hyphens, dots
+    // Each label (part between dots) must start and end with letter/number
+    // TLD must be at least 2 characters
+    const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$/;
+    
+    // Additional checks for overall length
+    if (domain.length > 253) return false;
+    
+    return domainRegex.test(domain);
+  };
+
   const handleZoneChange = (id: string, field: 'zoneId' | 'rootDomain', value: string) => {
     setSettings(prev => ({
       ...prev,
@@ -144,6 +191,22 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         zone.id === id ? { ...zone, [field]: value } : zone
       )
     }));
+    
+    // Validate root domain
+    if (field === 'rootDomain') {
+      if (value && !isValidDomain(value)) {
+        setValidationErrors(prev => ({
+          ...prev,
+          [`domain-${id}`]: 'Please enter a valid domain name'
+        }));
+      } else {
+        setValidationErrors(prev => {
+          const newErrors = {...prev};
+          delete newErrors[`domain-${id}`];
+          return newErrors;
+        });
+      }
+    }
   };
 
   const handleAddPrefix = (zoneId: string) => {
@@ -185,13 +248,35 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   };
 
   const handleSave = async () => {
+    // Validate all fields before saving
+    const errors: Record<string, string> = {};
+    
+    // Validate IP addresses
+    settings.ipOptions.forEach(option => {
+      if (option.address && !isValidIPv4(option.address)) {
+        errors[`ip-${option.id}`] = 'Please enter a valid IPv4 address';
+      }
+    });
+    
+    // Validate root domains
+    settings.zones.forEach(zone => {
+      if (zone.rootDomain && !isValidDomain(zone.rootDomain)) {
+        errors[`domain-${zone.id}`] = 'Please enter a valid domain name';
+      }
+    });
+    
+    // Check if we have any validation errors
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    
     setIsSaving(true);
     try {
       await onSave(settings);
       onClose();
     } catch (error) {
       console.error('Error saving settings:', error);
-      // You could add an error state and display it to the user
     } finally {
       setIsSaving(false);
     }
@@ -231,6 +316,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     onChange={(e) => handleIpOptionChange(option.id, 'address', e.target.value)}
                     size="small"
                     sx={{ flex: 1 }}
+                    error={!!validationErrors[`ip-${option.id}`]}
+                    helperText={validationErrors[`ip-${option.id}`] || ''}
                   />
                   <TextField
                     label="Description"
@@ -320,6 +407,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 onChange={(e) => handleZoneChange(zone.id, 'rootDomain', e.target.value)}
                 fullWidth
                 size="small"
+                error={!!validationErrors[`domain-${zone.id}`]}
+                helperText={validationErrors[`domain-${zone.id}`] || ''}
               />
               
               <Typography variant="subtitle2">Domain Prefixes</Typography>
