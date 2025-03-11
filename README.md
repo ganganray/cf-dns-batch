@@ -96,12 +96,27 @@ docker-compose up -d
 
 Access the application at [http://DOCKER_HOST:10080](http://DOCKER_HOST:10080).
 
+#### Docker Build (for development)
+
+```bash
+git clone https://github.com/ganganray/cf-dns-batch.git
+cd cf-dns-batch
+docker build -t cf-dns-batch .
+docker run -d \
+  --name cf-dns-batch \
+  -p 10080:80 \
+  -v cf_dns_batch:/etc/cf-dns-batch \
+  --restart unless-stopped \
+  cf-dns-batch
+```
+
 ## How to use
 
 IMPORTANT! If you plan to expose the application to the internet, ensure it is behind a reverse proxy that handles TLS/SSL certificates and an authentication provider such as Authentik.
 
 ### Settings
-The application stores settings in a 'settings.json' file, which includes:
+
+Click the "gear" button in the top right corner to open the settings panel. It should be self-explanatory. The application stores settings in a 'settings.json' file, which includes:
 
 - IP address options (currently supports IPv4 only)
 - Cloudflare API token

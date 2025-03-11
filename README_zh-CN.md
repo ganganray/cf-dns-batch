@@ -97,11 +97,26 @@ docker-compose up -d
 
 访问地址：[http://DOCKER_HOST:10080](http://DOCKER_HOST:10080)
 
+#### Docker 构建（用于开发）
+
+```bash
+git clone https://github.com/ganganray/cf-dns-batch.git
+cd cf-dns-batch
+docker build -t cf-dns-batch .
+docker run -d \
+  --name cf-dns-batch \
+  -p 10080:80 \
+  -v cf_dns_batch:/etc/cf-dns-batch \
+  --restart unless-stopped \
+  cf-dns-batch
+```
+
 ## 使用指南
 重要提示！如需对外公开访问，请务必通过反向代理部署，并配置TLS/SSL证书及认证系统（如Authentik）。
 
 ### 设置配置
-应用设置通过'settings.json'文件存储配置，包含：
+
+点击右上角的“齿轮”按钮以打开设置面板。本应用设置以'settings.json'文件存储在服务端，包含以下信息：
 
 - IP地址选项（当前仅支持IPv4）
 - Cloudflare API令牌
