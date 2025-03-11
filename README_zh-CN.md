@@ -1,13 +1,17 @@
 # Cloudflare DNS 批量管理工具 (cf-dns-batch)
 
+[English](./README.md) | [中文](./README_zh-CN.md)
+
 Cloudflare DNS 批量管理工具是一款开源Web应用，用于批量管理Cloudflare DNS记录。提供简洁界面实现IP地址选择与DNS记录更新。
 
 本项目最初为个人需求开发。我并非专业程序员，所有代码均通过大语言模型生成。在开发前我没有任何TypeScript或React经验，也未逐行审查代码（尽管已请大语言模型解释主要功能模块）。因此无法保证应用安全性，使用者需自行承担风险。
 
 ## 屏幕截图
 
-![Main Interface](./screenshots/main-interface.jpg)
-![Settings Panel](./screenshots/settings-panel.jpg)
+<div style="display: flex; justify-content: space-between;">
+  <img src="./screenshots/main-interface.jpg" alt="Main Interface" width="40%" />
+  <img src="./screenshots/settings-panel.jpg" alt="Settings Panel" width="40%" />
+</div>
 
 ## 功能特性
 

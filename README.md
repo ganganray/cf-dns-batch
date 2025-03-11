@@ -1,12 +1,17 @@
 # Cloudflare DNS Batch (cf-dns-batch)
 
+[English](./README.md) | [中文](./README_zh-CN.md)
+
 Cloudflare DNS Batch is an open-source web application that allows users to manage Cloudflare DNS records for a predefined batch of domain names. The application provides a simple interface for selecting IP addresses and updating DNS records accordingly.
 
 This project was initially for my personal convenience. I am no programmer. This project is developed by extensively using LLMs to generate codes. I don't know anything about TypeScript or React before starting this project. I have not read every line of the code; however, I did have the LLMs explain most of functional part to me. Therefore, I cannot guarantee the safety of this application. I am not responsible for any damage caused by this project. Use at your own risk.
 
 ## Screenshots
 
-![Main Interface](./screenshots/main-interface.jpg) ![Settings Panel](./screenshots/settings-panel.jpg)
+<div style="display: flex; justify-content: space-between;">
+  <img src="./screenshots/main-interface.jpg" alt="Main Interface" width="40%" />
+  <img src="./screenshots/settings-panel.jpg" alt="Settings Panel" width="40%" />
+</div>
 
 ## Features
 
