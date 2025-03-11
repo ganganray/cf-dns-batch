@@ -1,7 +1,8 @@
 {
-  "name": "client",
-  "private": true,
+  "name": "cloudflare-dns-batch-client",
   "version": "0.1.0",
+  "description": "Frontend for Cloudflare DNS Batch application",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",

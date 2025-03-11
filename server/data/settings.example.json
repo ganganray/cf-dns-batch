@@ -1,0 +1,42 @@
+{
+  "ipOptions": [
+    {
+      "id": "ip-example-1",
+      "address": "192.168.1.100",
+      "description": "Home Network"
+    },
+    {
+      "id": "ip-example-2",
+      "address": "203.0.113.10",
+      "description": "Office Network"
+    },
+    {
+      "id": "ip-example-3",
+      "address": "198.51.100.25",
+      "description": "VPS Server"
+    }
+  ],
+  "apiToken": "your_cloudflare_api_token_here",
+  "zones": [
+    {
+      "id": "zone-example-1",
+      "zoneId": "00000000000000000000000000000000",
+      "rootDomain": "example.com",
+      "prefixes": [
+        "www",
+        "blog",
+        "@"
+      ]
+    },
+    {
+      "id": "zone-example-2",
+      "zoneId": "11111111111111111111111111111111",
+      "rootDomain": "example.org",
+      "prefixes": [
+        "api",
+        "dev",
+        "staging"
+      ]
+    }
+  ]
+}

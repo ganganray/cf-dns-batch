@@ -158,7 +158,8 @@ app.post('/api/update-dns', async (req, res) => {
     if (!domains || domains.length === 0 || !ipAddress) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Missing required fields: domains and ipAddress' 
+        results: [],
+        error: 'Missing required fields: domains and ipAddress' 
       });
     }
     
@@ -166,7 +167,8 @@ app.post('/api/update-dns', async (req, res) => {
     if (!await fs.pathExists(SETTINGS_FILE_PATH)) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Settings not found. Please configure your settings first.' 
+        results: [],
+        error: 'Settings not found. Please configure your settings first.' 
       });
     }
     
@@ -175,7 +177,8 @@ app.post('/api/update-dns', async (req, res) => {
     if (!settings.apiToken) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Cloudflare API token not found in settings' 
+        results: [],
+        error: 'Cloudflare API token not found in settings' 
       });
     }
     
@@ -325,13 +328,20 @@ app.post('/api/update-dns', async (req, res) => {
     // Set overall success based on individual results
     results.success = results.results.every(result => result.success);
     
+    // Add a summary message to help with client-side display
+    if (!results.success) {
+      const successCount = results.results.filter(r => r.success).length;
+      const failCount = results.results.length - successCount;
+      results.error = `Failed to update ${failCount} out of ${results.results.length} domains`;
+    }
+    
     res.json(results);
   } catch (error) {
     console.error('Error updating DNS records:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Internal server error',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      results: [],
+      error: error instanceof Error ? error.message : 'Unknown error occurred while updating DNS records'
     });
   }
 });
@@ -352,4 +362,52 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
   console.log(`Data directory: ${DATA_DIR}`);
   console.log(`Client files: ${CLIENT_DIST}`);
+});
+
+// Test Cloudflare API token
+app.post('/api/test-token', async (req, res) => {
+  try {
+    const { token } = req.body;
+    
+    if (!token) {
+      return res.status(400).json({ error: 'API token is required' });
+    }
+    
+    // Test the token by making a simple request to Cloudflare API
+    // We'll try to list zones, which requires Zone.Read permissions
+    const response = await fetch('https://api.cloudflare.com/client/v4/zones?per_page=1', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      // Extract the error message from Cloudflare's response
+      const errorMessage = data.errors && data.errors.length > 0
+        ? data.errors[0].message
+        : 'Invalid token or insufficient permissions';
+        
+      return res.status(400).json({ 
+        error: `Cloudflare API error: ${errorMessage}`
+      });
+    }
+    
+    // Check if we can access at least one zone
+    if (!data.result || data.result.length === 0) {
+      return res.status(400).json({ 
+        error: 'Token is valid but has no access to any zones. Please check permissions.'
+      });
+    }
+    
+    // Token is valid and has the required permissions
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error testing Cloudflare token:', error);
+    res.status(500).json({ 
+      error: error instanceof Error ? error.message : 'Server error while validating token'
+    });
+  }
 });

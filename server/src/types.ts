@@ -47,8 +47,14 @@ export interface DnsUpdateResult {
 /**
  * Interface for DNS update response
  */
+// Update the DnsUpdateResponse interface to include the error property
 export interface DnsUpdateResponse {
   success: boolean;
-  results: DnsUpdateResult[];
-  message?: string;
+  results: {
+    domain: string;
+    success: boolean;
+    message: string;
+    recordId?: string;
+  }[];
+  error?: string; // Add this property
 }

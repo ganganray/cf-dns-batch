@@ -1,20 +1,34 @@
 {
-  "name": "cf-dns-batch",
+  "name": "cloudflare-dns-batch",
   "version": "0.1.0",
-  "description": "Cloudflare DNS Batch Management Tool",
+  "description": "A web application to manage Cloudflare DNS records for multiple domains in batch",
+  "private": true,
+  "keywords": [
+    "cloudflare",
+    "dns",
+    "batch",
+    "domain-management",
+    "ip-management"
+  ],
+  "author": "GanganRay",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ganganray/cf-dns-batch.git"
+  },
   "scripts": {
-    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
-    "dev": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\"",
-    "build": "cd client && npm run build && cd ../server && npm run build",
-    "start": "cd server && npm start",
-    "clean": "rimraf client/dist server/dist",
-    "test-build": "npm run clean && npm run build && npm run test-preview",
-    "test-preview": "concurrently \"cd server && cross-env NODE_ENV=production npm start\" \"cd client && npm run preview\"",
-    "prod": "cross-env NODE_ENV=production npm run start"
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "build:prod": "cross-env NODE_ENV=production npm run build",
+    "start": "cd server && npm run start",
+    "start:prod": "cross-env NODE_ENV=production npm run start"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
-    "cross-env": "^7.0.3",
-    "rimraf": "^5.0.5"
+    "cross-env": "^7.0.3"
   }
 }

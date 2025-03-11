@@ -15,11 +15,13 @@ deploy/
 
 # Logs
 logs/
+logs
 *.log
 npm-debug.log*
 
 # IDE
 .vscode/
+!.vscode/extensions.json
 .idea/
 
 # OS
@@ -28,3 +30,6 @@ Thumbs.db
 
 # private remarks
 private-remarks/
+
+# Sensitive data
+server/data/settings.json

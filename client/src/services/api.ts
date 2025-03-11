@@ -67,7 +67,17 @@ export const getSettingsFilePath = async (): Promise<string> => {
 };
 
 // Add this function to your existing api.ts file
-export async function updateDnsRecords(domains: string[], ipAddress: string): Promise<any> {
+// Update DNS records with improved error handling and per-zone status reporting
+export async function updateDnsRecords(domains: string[], ipAddress: string): Promise<{
+  success: boolean;
+  results: {
+    domain: string;
+    success: boolean;
+    message: string;
+    zoneId?: string;
+  }[];
+  error?: string;
+}> {
   try {
     const response = await fetch('/api/update-dns', {
       method: 'POST',
@@ -78,13 +88,70 @@ export async function updateDnsRecords(domains: string[], ipAddress: string): Pr
     });
     
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to update DNS records');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `API error: ${response.status}`);
     }
     
-    return await response.json();
+    const data = await response.json();
+    
+    // Check if the response contains results for each domain
+    if (data.results && Array.isArray(data.results)) {
+      return {
+        success: data.results.every((result: any) => result.success),
+        results: data.results
+      };
+    }
+    
+    // If the response doesn't have the expected format, return a generic success
+    return {
+      success: true,
+      results: domains.map(domain => ({
+        domain,
+        success: true,
+        message: 'DNS record updated successfully'
+      }))
+    };
   } catch (error) {
     console.error('Error updating DNS records:', error);
-    throw error;
+    return { 
+      success: false, 
+      results: domains.map(domain => ({
+        domain,
+        success: false,
+        message: error instanceof Error ? error.message : 'Unknown error occurred'
+      })),
+      error: error instanceof Error ? error.message : 'Failed to update DNS records'
+    };
   }
 }
+
+// Test Cloudflare API token validity
+export const testCloudflareToken = async (token: string): Promise<{ valid: boolean; message: string }> => {
+  try {
+    const response = await fetch('/api/test-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      return { 
+        valid: false, 
+        message: data.error || 'Failed to validate token' 
+      };
+    }
+    
+    return { 
+      valid: true, 
+      message: 'Token is valid and has the required permissions' 
+    };
+  } catch (error) {
+    console.error('Error testing Cloudflare token:', error);
+    return { 
+      valid: false, 
+      message: error instanceof Error ? error.message : 'Network error while validating token' 
+    };
+  }
+};

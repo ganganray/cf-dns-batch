@@ -20,6 +20,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import type { IpOption } from '../types';
+import { testCloudflareToken } from '../services/api';
 
 interface ZoneConfig {
   id: string;
@@ -55,6 +56,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   // Add validation state
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  // Add token testing states
+  const [tokenTesting, setTokenTesting] = useState(false);
+  const [tokenStatus, setTokenStatus] = useState<{ valid: boolean; message: string } | null>(null);
 
   // Update settings when initialSettings prop changes or when drawer opens
   useEffect(() => {
@@ -63,8 +67,35 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       setIsTokenEdited(false);
       setDisplayedToken('');
       setValidationErrors({});
+      setTokenStatus(null);
     }
   }, [initialSettings, open]);
+
+  // Add function to test the token
+  const handleTestToken = async () => {
+    if (!settings.apiToken) {
+      setTokenStatus({
+        valid: false,
+        message: 'Please enter an API token first'
+      });
+      return;
+    }
+    
+    setTokenTesting(true);
+    setTokenStatus(null);
+    
+    try {
+      const result = await testCloudflareToken(settings.apiToken);
+      setTokenStatus(result);
+    } catch (error) {
+      setTokenStatus({
+        valid: false,
+        message: error instanceof Error ? error.message : 'An error occurred during validation'
+      });
+    } finally {
+      setTokenTesting(false);
+    }
+  };
 
   // Add IPv4 validation function
   const isValidIPv4 = (ip: string): boolean => {
@@ -374,6 +405,36 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             <Typography variant="body2" sx={{ mt: 1 }}>
               Masked token: {maskToken(settings.apiToken)}
             </Typography>
+          )}
+          
+          {/* Add Test Connection button */}
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={handleTestToken}
+              disabled={tokenTesting || !settings.apiToken}
+              startIcon={tokenTesting ? <CircularProgress size={20} /> : null}
+            >
+              {tokenTesting ? 'Testing...' : 'Test Connection'}
+            </Button>
+          </Box>
+          
+          {/* Display token test results */}
+          {tokenStatus && (
+            <Box sx={{ mt: 2 }}>
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  p: 1, 
+                  bgcolor: tokenStatus.valid ? 'success.light' : 'error.light',
+                  color: tokenStatus.valid ? 'success.contrastText' : 'error.contrastText'
+                }}
+              >
+                <Typography variant="body2">
+                  {tokenStatus.message}
+                </Typography>
+              </Paper>
+            </Box>
           )}
         </Paper>
 

@@ -1,7 +1,8 @@
 {
-  "name": "cf-dns-batch-server",
+  "name": "cloudflare-dns-batch-server",
   "version": "0.1.0",
-  "description": "Server for Cloudflare DNS Batch Management Tool",
+  "description": "Backend API for Cloudflare DNS Batch application",
+  "private": true,
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",

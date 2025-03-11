@@ -1,0 +1,19 @@
+services:
+  cf-dns-batch:
+    image: ganganray/cf-dns-batch:0.1.0
+    container_name: cf-dns-batch
+    # comment out the port section if you put your container in the same docker network as your reverse proxy
+    ports:
+      - "10080:80" # edit the first number to your preferred port
+    volumes:
+      - cf-dns-batch:/etc/cf-dns-batch
+    restart: unless-stopped
+#     networks:
+#       - your-proxy-network:
+
+volumes:
+  cf-dns-batch:
+
+# networks:
+#    your-proxy-network:
+#       external: true

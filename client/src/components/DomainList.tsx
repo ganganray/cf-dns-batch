@@ -23,11 +23,11 @@ import type { DnsRecord, IpOption, DnsLookupResult } from '../types'
 import { getDnsStatus, getDnsLookupStatus } from '../utils/ipUtils'
 import { performCloudflareDoHLookup } from '../utils/dnsLookup'
 
-// Add interface for grouped records
-interface DomainGroup {
-    zone: string;
-    records: DnsRecord[];
-}
+// Remove the unused interface or use it in the code
+// interface DomainGroup {
+//     zone: string;
+//     records: DnsRecord[];
+// }
 
 // Add settings to props
 interface DomainListProps {
